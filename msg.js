@@ -1,7 +1,6 @@
 /**
  * [todo]
- * - [ ] generate index
- * - [ ] generate assets
+ * - [ ] cmd
  * - [ ] custom hammerjs
  * - [ ] custom highlight.js
  * - [ ] custom style
@@ -25,6 +24,11 @@ const readdirp = require('readdirp')
 const { Nuxt, Builder, Generator } = require('nuxt')
 const config = require('./nuxt.config.js')
 
+const nuxtRoot = path.join(__dirname, 'nuxt')
+const nuxtStatic = path.join(nuxtRoot, 'static')
+const nuxtPages = path.join(nuxtRoot, 'pages')
+const buildDir = path.join(__dirname, '.nuxt')
+
 const templateRoot = path.join(__dirname, 'template')
 const templateDirs = [
   'static',
@@ -38,25 +42,28 @@ const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
 const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
 const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content)
 
-const generate = (src = 'input', dist = 'output') => {
-  const inputRoot = path.join(__dirname, src)
-  const outputRoot = path.join(__dirname, dist)
-  const outputStatic = path.join(outputRoot, 'static')
-  const outputPages = path.join(outputRoot, 'pages')
-  fs.ensureDirSync(outputRoot)
-  templateDirs.map(filepath => path.join(outputRoot, filepath)).forEach(filepath => {
+const init = (src = '.', callback) => {
+  const inputRoot = path.resolve(src)
+  fs.ensureDirSync(nuxtRoot)
+  templateDirs.map(filepath => path.join(nuxtRoot, filepath)).forEach(filepath => {
     fs.ensureDirSync(filepath)
   })
   templateFiles.forEach(filepath => {
     fs.copySync(
       path.join(templateRoot, filepath),
-      path.join(outputRoot, filepath)
+      path.join(nuxtRoot, filepath)
     )
   })
-  fs.copySync(inputRoot, outputStatic)
+  fs.copySync(inputRoot, nuxtStatic, {
+    // todo
+    // filter: file => {
+    //   console.log(!file.match(/^[\_\.]/), file)
+    //   return !file.match(/^[\_\.]/)
+    // }
+  })
   const pages = []
   readdirp({
-    root: outputStatic,
+    root: nuxtStatic,
     fileFilter: ['*.md'],
     depth: 1
   }).on('data', entry => {
@@ -64,22 +71,43 @@ const generate = (src = 'input', dist = 'output') => {
     if (name) {
       const content = fs.readFileSync(entry.fullPath, { encoding: 'utf8' })
       const output = generatePage(JSON.stringify(content))
-      fs.outputFileSync(path.join(outputPages, `${name}.vue`), output)
+      fs.outputFileSync(path.join(nuxtPages, `${name}.vue`), output)
       pages.push(name)
     }
-  }).on('end', async () => {
+  }).on('end', () => {
     // `pages/index.vue`
     const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
     const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
-    fs.outputFileSync(path.join(outputPages, 'index.vue'), indexOutput)
-    // generate
-    const nuxt = new Nuxt(config)
-    const builder = new Builder(nuxt)
-    const generator = new Generator(nuxt, builder)
-    generator.generate().then(() => {
-      console.log('generated')
-    })
+    fs.outputFileSync(path.join(nuxtPages, 'index.vue'), indexOutput)
+    callback && callback()
   })
 }
 
-generate()
+const generate = (output, callback) => {
+  config.srcDir = nuxtRoot
+  config.buildDir = buildDir
+  // todo
+  // if (output) {
+  //   config.dir = output
+  // }
+  const nuxt = new Nuxt(config)
+  const builder = new Builder(nuxt)
+  const generator = new Generator(nuxt, builder)
+  generator.generate().then(() => {
+    console.log('generated')
+    callback && callback()
+  })
+}
+
+const clean = () => {
+  // todo
+}
+
+const msg = (src = '.', dist = 'dist') => {
+  init(src, () => generate(dist, () => clean))
+}
+
+exports.init = init
+exports.generate = generate
+exports.clean = clean
+exports.msg = msg

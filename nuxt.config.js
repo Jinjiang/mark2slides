@@ -3,7 +3,9 @@ module.exports = {
 
   dev: false,
 
-  srcDir: './output',
+  build: { analyze: false },
+
+  srcDir: './nuxt',
 
   /*
   ** Headers of the page

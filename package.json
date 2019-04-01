@@ -2,10 +2,11 @@
   "name": "msg",
   "version": "1.0.0",
   "description": "",
-  "main": "generate.js",
+  "main": "msg.js",
+  "bin": "cmd.js",
   "scripts": {
-    "build": "node ./generate.js",
-    "clean": "rm -Rf output .nuxt dist"
+    "build": "node ./cmd.js -i input -o dist",
+    "clean": "rm -Rf nuxt .nuxt dist"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/Jinjiang/msg#readme",
   "dependencies": {
     "fs-extra": "^7.0.1",
+    "minimist": "^1.2.0",
     "ncp": "^2.0.0",
     "nuxt": "^2.5.1",
     "readdirp": "^2.2.1",
