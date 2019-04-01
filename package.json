@@ -4,7 +4,7 @@
   "description": "",
   "main": "generate.js",
   "scripts": {
-    "build": "node ./generate.js && nuxt generate",
+    "build": "node ./generate.js",
     "clean": "rm -Rf output .nuxt dist"
   },
   "repository": {

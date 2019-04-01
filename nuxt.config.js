@@ -1,6 +1,8 @@
 module.exports = {
   mode: 'spa',
 
+  dev: false,
+
   srcDir: './output',
 
   /*

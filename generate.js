@@ -13,9 +13,6 @@
  *   - `pages/`
  *   - `components/`
  *     - `slides.vue`
- *   - `nuxt.config.js`
- *   - `package.json`
- *   - `yarn.lock`
  * 1. cp all files into`static`
  * 2. find all`<name>.md` or`<name>/README.md`
  * 3. generate`pages/<name>.vue`
@@ -25,8 +22,8 @@
 const path = require('path')
 const fs = require('fs-extra')
 const readdirp = require('readdirp')
-// const { Nuxt, Builder, Generator } = require('nuxt')
-// const config = require('./nuxt.config.js')
+const { Nuxt, Builder, Generator } = require('nuxt')
+const config = require('./nuxt.config.js')
 
 const templateRoot = path.join(__dirname, 'template')
 const templateDirs = [
@@ -35,8 +32,7 @@ const templateDirs = [
   'components'
 ]
 const templateFiles = [
-  'components/slides.vue',
-  // 'nuxt.config.js'
+  'components/slides.vue'
 ]
 const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
 const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
@@ -76,16 +72,13 @@ const generate = (src = 'input', dist = 'output') => {
     const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
     const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
     fs.outputFileSync(path.join(outputPages, 'index.vue'), indexOutput)
-    console.log('output dir generated')
     // generate
-    // const nuxt = new Nuxt(config)
-    // const builder = new Builder(nuxt)
-    // const generator = new Generator(nuxt, builder)
-    // // console.log(nuxt, builder, generator)
-    // console.log(generator)
-    // generator.generate({ init: true, build: true }).then(() => {
-    //   console.log('generated')
-    // })
+    const nuxt = new Nuxt(config)
+    const builder = new Builder(nuxt)
+    const generator = new Generator(nuxt, builder)
+    generator.generate().then(() => {
+      console.log('generated')
+    })
   })
 }
 
