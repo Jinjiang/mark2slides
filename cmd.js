@@ -4,7 +4,6 @@ const minimist = require('minimist')
 const { msg, clean } = require('./msg')
 
 const argv = minimist(process.argv.slice(2))
-// console.log(argv)
 
 const help = () => console.log(`
 Hello, I'm a markdown-to-slides generator.
@@ -22,8 +21,12 @@ Commands:
 `.trim())
 
 if (argv._.length > 1) {
+  if (argv.h || argv.help) {
+    help()
+    return
+  }
   console.error(`Sorry, you couldn't run more than one commands at the same time.`)
-  return;
+  return
 }
 
 const cmd = argv._[0]
@@ -31,34 +34,28 @@ const cmd = argv._[0]
 switch (cmd) {
   case 'clean':
     if (argv.h || argv.help) {
-      // console.log('help')
       help()
-      break
+      return
     }
-    // console.log('clean()')
     clean()
-    break
+    return
   case undefined:
   case 'help':
-    // console.log('help')
     help()
-    break
+    return
   case 'build':
     if (argv.h || argv.help) {
-      // console.log('help')
       help()
-      break
+      return
     }
     const input = argv.i || argv.input || '.'
     const output = argv.o || argv.output || 'dist'
-    // console.log('msg(input, output)')
     msg(input, output)
-    break
+    return
   default:
     if (argv.h || argv.help) {
-      // console.log('help')
       help()
-      break
+      return
     }
     console.error(`Sorry, command "${cmd}" not supported.`)
 }

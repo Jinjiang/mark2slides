@@ -86,7 +86,7 @@ const generate = (output, callback) => {
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
   generator.generate().then(() => {
-    console.log(`[finished] all slides generated in ${output}`)
+    console.log(`\n[finished] all slides generated in ${output}\n`)
     callback && callback()
   })
 }
