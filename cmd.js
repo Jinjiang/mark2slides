@@ -7,5 +7,6 @@ const { msg } = require('./msg')
 const input = argv.i || argv.input || '.'
 const output = argv.o || argv.output || '_dist'
 
-console.log(input, output, typeof msg)
+console.log(argv)
+
 msg(input, output)

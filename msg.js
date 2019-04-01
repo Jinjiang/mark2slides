@@ -1,6 +1,5 @@
 /**
  * [todo]
- * - [ ] cmd
  * - [ ] custom hammerjs
  * - [ ] custom highlight.js
  * - [ ] custom style
@@ -42,7 +41,7 @@ const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
 const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
 const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content)
 
-const init = (src = '.', callback) => {
+const init = (src = '.', filter, callback) => {
   const inputRoot = path.resolve(src)
   fs.ensureDirSync(nuxtRoot)
   templateDirs.map(filepath => path.join(nuxtRoot, filepath)).forEach(filepath => {
@@ -54,13 +53,8 @@ const init = (src = '.', callback) => {
       path.join(nuxtRoot, filepath)
     )
   })
-  fs.copySync(inputRoot, nuxtStatic, {
-    // todo
-    // filter: file => {
-    //   console.log(!file.match(/^[\_\.]/), file)
-    //   return !file.match(/^[\_\.]/)
-    // }
-  })
+  const copyOptions = filter ? { filter } : {}
+  fs.copySync(inputRoot, nuxtStatic, copyOptions)
   const pages = []
   readdirp({
     root: nuxtStatic,
@@ -85,11 +79,9 @@ const init = (src = '.', callback) => {
 
 const generate = (output, callback) => {
   config.srcDir = nuxtRoot
-  config.buildDir = buildDir
-  // todo
-  // if (output) {
-  //   config.dir = output
-  // }
+  if (output) {
+    config.generate.dir = path.resolve(output)
+  }
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
@@ -100,11 +92,14 @@ const generate = (output, callback) => {
 }
 
 const clean = () => {
-  // todo
+  fs.removeSync(path.resolve('.nuxt'))
+  fs.removeSync(path.join(__dirname, 'nuxt'))
 }
 
 const msg = (src = '.', dist = 'dist') => {
-  init(src, () => generate(dist, () => clean))
+  init(src,
+    filepath => filepath !== path.resolve('.', dist),
+    () => generate(dist, clean))
 }
 
 exports.init = init

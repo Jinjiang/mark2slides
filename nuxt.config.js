@@ -5,6 +5,8 @@ module.exports = {
 
   build: { analyze: false },
 
+  generate: {},
+
   srcDir: './nuxt',
 
   /*
