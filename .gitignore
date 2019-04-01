@@ -83,6 +83,6 @@ dist
 # Service worker
 sw.*
 
-assets/*
-static/*
-pages/*
+input
+output
+temp

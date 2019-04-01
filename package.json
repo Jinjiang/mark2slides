@@ -1,0 +1,28 @@
+{
+  "name": "msg",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generate.js",
+  "scripts": {
+    "build": "node ./generate.js && nuxt generate",
+    "clean": "rm -Rf output .nuxt dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jinjiang/msg.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jinjiang/msg/issues"
+  },
+  "homepage": "https://github.com/Jinjiang/msg#readme",
+  "dependencies": {
+    "fs-extra": "^7.0.1",
+    "ncp": "^2.0.0",
+    "nuxt": "^2.5.1",
+    "readdirp": "^2.2.1",
+    "vue-mark-display": "^0.1.1"
+  }
+}
