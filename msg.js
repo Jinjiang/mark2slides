@@ -92,8 +92,9 @@ const generate = (output, baseUrl, callback) => {
   }
   if (baseUrl) {
     config.build.extend = config => {
-      config.output.publicPath = (`/${baseUrl}/_nuxt/`).replace(/\/\//g, '/')
+      config.output.publicPath = `/${baseUrl}/_nuxt/`.replace(/\/\//g, '/')
     }
+    config.router.base = `/${baseUrl}/`.replace(/\/\//g, '/')
   }
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)

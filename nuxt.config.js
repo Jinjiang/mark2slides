@@ -9,6 +9,8 @@ module.exports = {
 
   generate: {},
 
+  router: { base: '/' },
+
   srcDir: './nuxt',
 
   /*
