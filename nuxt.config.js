@@ -3,7 +3,13 @@ module.exports = {
 
   dev: false,
 
-  build: { analyze: false },
+  build: {
+    analyze: false,
+    // publicPath: '.nuxt/',
+    extend(config) {
+      config.output.publicPath = '_nuxt/'
+    }
+  },
 
   generate: {},
 
