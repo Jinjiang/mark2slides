@@ -26,6 +26,8 @@ const config = require('./nuxt.config.js')
 const nuxtRoot = path.join(__dirname, 'nuxt')
 const nuxtStatic = path.join(nuxtRoot, 'static')
 const nuxtPages = path.join(nuxtRoot, 'pages')
+const nuxtIndexPage = path.join(nuxtPages, 'index.vue')
+const nuxtReadmePage = path.join(nuxtPages, 'README.vue')
 const buildDir = path.join(__dirname, '.nuxt')
 
 const templateRoot = path.join(__dirname, 'template')
@@ -39,7 +41,7 @@ const templateFiles = [
 ]
 const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
 const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
-const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content)
+const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content.replace(/\$/g, '&dollar;'))
 
 const init = (src = '.', filter, callback) => {
   const inputRoot = path.resolve(src)
@@ -70,9 +72,15 @@ const init = (src = '.', filter, callback) => {
     }
   }).on('end', () => {
     // `pages/index.vue`
-    const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
-    const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
-    fs.outputFileSync(path.join(nuxtPages, 'index.vue'), indexOutput)
+    if (!fs.existsSync(nuxtIndexPage)) {
+      if (fs.existsSync(nuxtReadmePage)) {
+        fs.moveSync(nuxtReadmePage, nuxtIndexPage)
+      } else {
+        const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
+        const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
+        fs.outputFileSync(nuxtIndexPage, indexOutput)
+      }
+    }
     callback && callback()
   })
 }
