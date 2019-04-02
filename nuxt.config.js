@@ -4,8 +4,7 @@ module.exports = {
   dev: false,
 
   build: {
-    analyze: false,
-    publicPath: '.nuxt/',
+    analyze: false
   },
 
   generate: {},
