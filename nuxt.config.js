@@ -5,10 +5,7 @@ module.exports = {
 
   build: {
     analyze: false,
-    // publicPath: '.nuxt/',
-    extend(config) {
-      config.output.publicPath = '_nuxt/'
-    }
+    publicPath: '.nuxt/',
   },
 
   generate: {},

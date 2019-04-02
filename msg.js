@@ -85,10 +85,13 @@ const init = (src = '.', filter, callback) => {
   })
 }
 
-const generate = (output, callback) => {
+const generate = (output, baseUrl, callback) => {
   config.srcDir = nuxtRoot
   if (output) {
     config.generate.dir = path.resolve(output)
+  }
+  if (baseUrl) {
+    config.build.publicPath = (baseUrl + '/.nuxt/').replace(/\/\//g, '/').replace(/^\//, '')
   }
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)
@@ -104,10 +107,10 @@ const clean = () => {
   fs.removeSync(path.join(__dirname, 'nuxt'))
 }
 
-const msg = (src = '.', dist = 'dist') => {
+const msg = (src = '.', dist = 'dist', baseUrl = '/') => {
   init(src,
     filepath => filepath !== path.resolve('.', dist),
-    () => generate(dist, clean))
+    () => generate(dist, baseUrl, clean))
 }
 
 exports.init = init
