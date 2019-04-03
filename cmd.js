@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs')
 const minimist = require('minimist')
 const { msg, clean } = require('./msg')
 
@@ -8,10 +9,10 @@ const argv = minimist(process.argv.slice(2))
 const help = () => console.log(`
 Hello, I'm a markdown-to-slides generator.
 
-Usage: msg <command> [options]
+Usage: m2s <command> [options]
 
 Options:
-  -i, --input       input directory, "." by default
+  -i, --input       input directory or markdown file, "." by default
   -o, --output      output directory, "dist" by default
 
 Commands:
@@ -56,6 +57,12 @@ switch (cmd) {
   default:
     if (argv.h || argv.help) {
       help()
+      return
+    }
+    if (fs.lstatSync(cmd).isFile()) {
+      const output = argv.o || argv.output || 'dist'
+      const baseUrl = argv.b || argv.base || '/'
+      msg(cmd, output, baseUrl)
       return
     }
     console.error(`Sorry, command "${cmd}" not supported.`)

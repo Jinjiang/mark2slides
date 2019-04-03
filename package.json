@@ -1,28 +1,33 @@
 {
-  "name": "msg",
-  "version": "1.0.0",
-  "description": "",
+  "name": "mark2slides",
+  "version": "0.1.0",
+  "description": "A tool to generate slides from markdown file(s).",
   "main": "msg.js",
-  "bin": "cmd.js",
+  "bin": {
+    "m2s": "cmd.js"
+  },
+  "homepage": "https://github.com/jinjiang/vue-mark-display#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jinjiang/mark2slides.git"
+  },
   "scripts": {
     "build": "node ./cmd.js -i input -o dist",
     "clean": "rm -Rf nuxt .nuxt dist"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Jinjiang/msg.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "markdown",
+    "slides"
+  ],
+  "author": "Jinjiang <zhaojinjiang@me.com>",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Jinjiang/msg/issues"
+    "url": "https://github.com/Jinjiang/mark2slides/issues"
   },
-  "homepage": "https://github.com/Jinjiang/msg#readme",
+  "homepage": "https://github.com/Jinjiang/mark2slides#readme",
   "dependencies": {
     "fs-extra": "^7.0.1",
     "minimist": "^1.2.0",
-    "ncp": "^2.0.0",
     "nuxt": "^2.5.1",
     "readdirp": "^2.2.1",
     "vue-mark-display": "^0.1.1"

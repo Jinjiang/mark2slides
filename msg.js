@@ -44,7 +44,7 @@ const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
 const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content.replace(/\$/g, '&dollar;'))
 
 const init = (src = '.', filter, callback) => {
-  const inputRoot = path.resolve(src)
+  // prepare template
   fs.ensureDirSync(nuxtRoot)
   templateDirs.map(filepath => path.join(nuxtRoot, filepath)).forEach(filepath => {
     fs.ensureDirSync(filepath)
@@ -55,34 +55,47 @@ const init = (src = '.', filter, callback) => {
       path.join(nuxtRoot, filepath)
     )
   })
-  const copyOptions = filter ? { filter } : {}
-  fs.copySync(inputRoot, nuxtStatic, copyOptions)
-  const pages = []
-  readdirp({
-    root: nuxtStatic,
-    fileFilter: ['*.md'],
-    depth: 1
-  }).on('data', entry => {
-    const [, name] = entry.path.match(/^([^\/]+)(\/README\.md|\.md)$/) || []
-    if (name) {
-      const content = fs.readFileSync(entry.fullPath, { encoding: 'utf8' })
-      const output = generatePage(JSON.stringify(content))
-      fs.outputFileSync(path.join(nuxtPages, `${name}.vue`), output)
-      pages.push(name)
-    }
-  }).on('end', () => {
-    // `pages/index.vue`
-    if (!fs.existsSync(nuxtIndexPage)) {
-      if (fs.existsSync(nuxtReadmePage)) {
-        fs.moveSync(nuxtReadmePage, nuxtIndexPage)
-      } else {
-        const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
-        const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
-        fs.outputFileSync(nuxtIndexPage, indexOutput)
+  // copy file(s)
+  const inputRoot = path.resolve(src)
+  if (fs.lstatSync(inputRoot).isDirectory()) {
+    // for directory, copy all files for generating a whole spa
+    const copyOptions = filter ? { filter } : {}
+    fs.copySync(inputRoot, nuxtStatic, copyOptions)
+    const pages = []
+    readdirp({
+      root: nuxtStatic,
+      fileFilter: ['*.md'],
+      depth: 1
+    }).on('data', entry => {
+      const [, name] = entry.path.match(/^([^\/]+)(\/README\.md|\.md)$/) || []
+      if (name) {
+        const content = fs.readFileSync(entry.fullPath, { encoding: 'utf8' })
+        const output = generatePage(JSON.stringify(content))
+        fs.outputFileSync(path.join(nuxtPages, `${name}.vue`), output)
+        pages.push(name)
       }
-    }
-    callback && callback()
-  })
+    }).on('end', () => {
+      // `pages/index.vue`
+      if (!fs.existsSync(nuxtIndexPage)) {
+        if (fs.existsSync(nuxtReadmePage)) {
+          fs.moveSync(nuxtReadmePage, nuxtIndexPage)
+        } else {
+          const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
+          const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
+          fs.outputFileSync(nuxtIndexPage, indexOutput)
+        }
+      }
+      callback && callback({ isFile: false })
+    })
+  } else if (fs.lstatSync(inputRoot).isFile()) {
+    // for file, copy it into pages/index.vue for generating just one slides
+    const content = fs.readFileSync(inputRoot, { encoding: 'utf8' })
+    const output = generatePage(JSON.stringify(content))
+    fs.outputFileSync(nuxtIndexPage, output)
+    callback && callback({ isFile: true })
+  } else {
+    console.error('Input source error!')
+  }
 }
 
 const generate = (output, baseUrl, callback) => {
@@ -113,7 +126,7 @@ const clean = () => {
 const msg = (src = '.', dist = 'dist', baseUrl = '/') => {
   init(src,
     filepath => filepath !== path.resolve('.', dist),
-    () => generate(dist, baseUrl, clean))
+    ({ isFile }) => generate(dist, isFile ? './' : baseUrl, clean))
 }
 
 exports.init = init
