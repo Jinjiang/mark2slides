@@ -97,7 +97,7 @@ h1, h2, h3, p {
 }
 ul, ol {
   text-align: initial;
-  margin: 0 0 0.5em 1em;
+  margin: 0 0 0.5em 0.5em;
 }
 img, video {
   max-width: 80vw;
