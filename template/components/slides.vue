@@ -29,7 +29,7 @@ export default {
         document.title = title || "My Slides"
       })
     }
-  }
+  },
   created() {
     const search = location.search;
     if (search.length > 1) {
@@ -106,7 +106,7 @@ img, video {
 }
 blockquote {
   font-family: cursive;
-  font-size: 0.75em;
+  font-size: 0.6em;
   text-align: initial;
   background: rgba(225,225,225,.75);
   padding: 0.5em 1em;
@@ -127,6 +127,15 @@ kbd {
   border-radius: 0.2em;
   box-shadow: inset 0 -1px 0 #bbb;
 }
+a {
+  font-size: 0.75em;
+}
+small {
+  font-size: 0.6em;
+}
+code {
+  font-size: 0.75em;
+}
 
 credits {
   position: absolute;
@@ -138,5 +147,10 @@ credits {
 }
 credits::before {
   content: "Credits: ";
+}
+
+.slide-content {
+  text-align: initial;
+  line-height: 1.25;
 }
 </style>
