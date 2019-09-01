@@ -3,8 +3,16 @@
 </template>
 
 <script>
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
+import { setHighlighter } from "vue-mark-display";
+
 import Slides from '~/components/slides.vue'
+
+setHighlighter(code => hljs.highlightAuto(code).value || code);
+
 const content = `<TEMPLATE_CONTENT>`
+
 export default {
   components: { Slides },
   data() {
@@ -17,10 +25,7 @@ export default {
 
 <style>
 body {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   margin: 0;
-  color: #2c3e50;
+  overflow: hidden;
 }
 </style>

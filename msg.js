@@ -37,7 +37,8 @@ const templateDirs = [
   'components'
 ]
 const templateFiles = [
-  'components/slides.vue'
+  'components/slides.vue',
+  'components/joycon.js'
 ]
 const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
 const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
