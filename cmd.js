@@ -2,7 +2,7 @@
 
 const fs = require('fs')
 const minimist = require('minimist')
-const { msg, clean } = require('./msg')
+const { clean, build } = require('./msg')
 
 const argv = minimist(process.argv.slice(2))
 
@@ -14,11 +14,24 @@ Usage: m2s <command> [options]
 Options:
   -i, --input       input directory or markdown file, "." by default
   -o, --output      output directory, "dist" by default
+  -b, --base        base path of the generated code, "/" by default
+  -c, --config      config file, ".mdrc" by default
 
 Commands:
   build [options]   generate all markdown into slides
   clean             clean all temp files manually
   help
+
+Config File:
+  A JSON file which has two optional fields: "ignore" and "copy".
+  Both are an array of "minimatch" string, which would be used
+  to match all first-level sub directories in the target directory.
+  For example:
+  {
+    "ignore": ["dist"],
+    "copy": ["assets", "images"]
+  }
+
 `.trim())
 
 if (argv._.length > 1) {
@@ -52,7 +65,15 @@ switch (cmd) {
     const input = argv.i || argv.input || '.'
     const output = argv.o || argv.output || 'dist'
     const baseUrl = argv.b || argv.base || '/'
-    msg(input, output, baseUrl)
+    const rcUrl = argv.c || argv.rc || '.mdrc'
+    let config = {}
+    try {
+      config = JSON.parse(fs.readFileSync(rcUrl, { encoding: 'utf8' }))
+    } catch (error) {
+      console.error(error)
+    }
+    const { ignore, copy } = config
+    build(input, { output, baseUrl, ignore, copy })
     return
   default:
     if (argv.h || argv.help) {
@@ -62,7 +83,7 @@ switch (cmd) {
     if (fs.lstatSync(cmd).isFile()) {
       const output = argv.o || argv.output || 'dist'
       const baseUrl = argv.b || argv.base || '/'
-      msg(cmd, output, baseUrl)
+      build(cmd, { output, baseUrl })
       return
     }
     console.error(`Sorry, command "${cmd}" not supported.`)

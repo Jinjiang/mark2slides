@@ -17,120 +17,155 @@
  * 4. generate`pages/index.vue`
  * 5. build
  */
+
+// ---- dependencies ----
+
 const path = require('path')
 const fs = require('fs-extra')
 const readdirp = require('readdirp')
+const minimatch = require('minimatch')
 const { Nuxt, Builder, Generator } = require('nuxt')
-const config = require('./nuxt.config.js')
 
-const nuxtRoot = path.join(__dirname, 'nuxt')
-const nuxtStatic = path.join(nuxtRoot, 'static')
-const nuxtPages = path.join(nuxtRoot, 'pages')
-const nuxtIndexPage = path.join(nuxtPages, 'index.vue')
-const nuxtReadmePage = path.join(nuxtPages, 'README.vue')
-const buildDir = path.join(__dirname, '.nuxt')
+// ---- prepare nuxt env ----
 
-const templateRoot = path.join(__dirname, 'template')
-const templateDirs = [
-  'static',
-  'pages',
-  'components'
-]
-const templateFiles = [
-  'components/slides.vue',
-  'components/joycon.js'
-]
-const pageTemplatePath = path.join(templateRoot, 'pages', 'template.vue')
-const pageTemplate = fs.readFileSync(pageTemplatePath, { encoding: 'utf8' })
-const generatePage = content => pageTemplate.replace(/\`\<TEMPLATE_CONTENT\>\`/, content.replace(/\$/g, '&dollar;'))
+const { genConfig, genPath, genTemplatePath } = require('./nuxt.js')
+const nuxtPath = genPath(__dirname)
+const templatePath = genTemplatePath(__dirname)
 
-const init = (src = '.', filter, callback) => {
-  // prepare template
-  fs.ensureDirSync(nuxtRoot)
-  templateDirs.map(filepath => path.join(nuxtRoot, filepath)).forEach(filepath => {
-    fs.ensureDirSync(filepath)
-  })
-  templateFiles.forEach(filepath => {
-    fs.copySync(
-      path.join(templateRoot, filepath),
-      path.join(nuxtRoot, filepath)
-    )
-  })
-  // copy file(s)
-  const inputRoot = path.resolve(src)
-  if (fs.lstatSync(inputRoot).isDirectory()) {
-    // for directory, copy all files for generating a whole spa
-    const copyOptions = filter ? { filter } : {}
-    fs.copySync(inputRoot, nuxtStatic, copyOptions)
-    const pages = []
-    readdirp({
-      root: nuxtStatic,
-      fileFilter: ['*.md'],
-      depth: 1
-    }).on('data', entry => {
-      const [, name] = entry.path.match(/^([^\/]+)(\/README\.md|\.md)$/) || []
-      if (name) {
-        const content = fs.readFileSync(entry.fullPath, { encoding: 'utf8' })
-        const output = generatePage(JSON.stringify(content))
-        fs.outputFileSync(path.join(nuxtPages, `${name}.vue`), output)
-        pages.push(name)
+const transformFile = (src, dist) => {
+  const content = fs.readFileSync(src, { encoding: 'utf8' })
+  const output = templatePath.pageGenerator(JSON.stringify(content))
+  fs.outputFileSync(dist, output)
+}
+
+const transformPage = (name, src, dist) => {
+  const content = fs.readFileSync(src, { encoding: 'utf8' })
+  const output = templatePath.pageGenerator(JSON.stringify(content))
+  fs.outputFileSync(path.join(dist, `${name}.vue`), output)
+}
+
+const transformIndex = (pageList, dist) => {
+  const content = pageList.map(name => `- [${name}](./${name})`).join('\n')
+  const output = templatePath.pageGenerator(JSON.stringify(`### My Slides\n\n${content}`))
+  fs.outputFileSync(dist, output)
+}
+
+const checkInputType = src => {
+  const target = fs.lstatSync(path.resolve(src))
+  if (target.isFile()) {
+    return 'file'
+  } else (target.isDirectory()) {
+    return 'directory'
+  }
+  return ''
+}
+
+// ---- build process ----
+
+const clean = () => {
+  fs.removeSync(nuxtPath.root)
+  fs.removeSync(nuxtPath.buildDir)
+}
+
+const prepareTemplate = () => {
+  fs.ensureDirSync(nuxtPath.root)
+  templatePath.dirs
+    .map(filepath => path.resolve(nuxtPath.root, filepath))
+    .forEach(filepath => fs.ensureDirSync(filepath))
+  templateFiles
+    .forEach(filepath => 
+      fs.copySync(
+        path.join(templatePath.root, filepath),
+        path.join(nuxtPath.root, filepath)))
+}
+
+const prepareFile = (src) => {
+  // just transform one file
+  transformFile(path.resolve(src), nuxtPath.indexPage)
+}
+
+const prepareDirectory = (src, config) => {
+  const { dist, ignore, copy } = config
+  const filterList = [ /^\./, dist, ...ignore, ...copy]
+
+  // generate pages
+  const pageList = []
+  const fullSrc = path.resolve(src)
+  fs.readdirSync(fullSrc).forEach(file => {
+    // filter first
+    if (filterList.some(rule => minimatch(file, rule))) {
+      return
+    }
+
+    // check the target is file or directory
+    const fullPath = path.resolve(src, file)
+    const target = fs.lstatSync(fullPath)
+    if (target.isFile()) {
+      if (file.match(/^.+\.md$/)) {
+        // single markdown file
+        const name = file.substr(0, file.length - 3)
+        fs.copySync(fullPath, path.resolve(nuxtPath.static, file))
+        transformPage(name, fullPath, nuxtPath.pages)
+        pageList.push(name)
       }
-    }).on('end', () => {
-      // `pages/index.vue`
-      if (!fs.existsSync(nuxtIndexPage)) {
-        if (fs.existsSync(nuxtReadmePage)) {
-          fs.moveSync(nuxtReadmePage, nuxtIndexPage)
-        } else {
-          const indexContent = pages.map(name => `- [${name}](./${name})`).join('\n')
-          const indexOutput = generatePage(JSON.stringify(`### My Slides\n\n${indexContent}`))
-          fs.outputFileSync(nuxtIndexPage, indexOutput)
-        }
+    } else if (target.isDirectory()) {
+      const targetFileFullPath = path.resolve(fullPath, 'README.md')
+      const targetFile = fs.lstatSync(targetFileFullPath)
+      if (targetFile.isFile()) {
+        // folder with README.md
+        const name = file
+        fs.copySync(fullPath, path.resolve(nuxtPath.static, file))
+        transformPage(name, targetFileFullPath, nuxtPath.pages)
+        pageList.push(name)
       }
-      callback && callback({ isFile: false })
-    })
-  } else if (fs.lstatSync(inputRoot).isFile()) {
-    // for file, copy it into pages/index.vue for generating just one slides
-    const content = fs.readFileSync(inputRoot, { encoding: 'utf8' })
-    const output = generatePage(JSON.stringify(content))
-    fs.outputFileSync(nuxtIndexPage, output)
-    callback && callback({ isFile: true })
-  } else {
-    console.error('Input source error!')
+    }
+  })
+
+  // generate index
+  if (!fs.existsSync(nuxtPath.indexPage)) {
+    if (fs.existsSync(nuxtPath.readmePage)) {
+      fs.moveSync(nuxtPath.readmePage, nuxtPath.indexPage)
+    } else {
+      transformIndex(pageList, nuxtPath.indexPage)
+    }
   }
 }
 
-const generate = (output, baseUrl, callback) => {
-  config.srcDir = nuxtRoot
-  if (output) {
-    config.generate.dir = path.resolve(output)
+const generate = async (dist, baseUrl) => {
+  const config = genConfig()
+  config.srcDir = nuxtPath.root
+  config.generate.dir = path.resolve(dist)
+  config.build.extend = config => {
+    config.output.publicPath = `/${baseUrl}/_nuxt/`.replace(/\/\//g, '/')
   }
-  if (baseUrl) {
-    config.build.extend = config => {
-      config.output.publicPath = `/${baseUrl}/_nuxt/`.replace(/\/\//g, '/')
-    }
-    config.router.base = `/${baseUrl}/`.replace(/\/\//g, '/')
-  }
+  config.router.base = `/${baseUrl}/`.replace(/\/\//g, '/')
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
-  generator.generate().then(() => {
-    console.log(`\n[finished] all slides generated in ${output}\n`)
-    callback && callback()
-  })
+  await generator.generate()
+  console.log(`\n[finished] all slides generated in ${output}\n`)
 }
 
-const clean = () => {
-  fs.removeSync(path.resolve('.nuxt'))
-  fs.removeSync(path.join(__dirname, 'nuxt'))
+// ---- entry point ----
+
+const build = async (src = '.', { output, baseUrl, ignore, copy }) => {
+  const config = {
+    dist: dist || 'dist',
+    ignore: ignore || [],
+    copy: copy || []
+  }
+  clean()
+  prepareTemplate()
+  const inputType = checkInputType(src)
+  if (inputType === 'file') {
+    prepareFile(src)
+    await generate(dist, baseUrl || '/')
+  } else if (inputType === 'directory') {
+    prepareDirectory(src, config)
+    await generate(dist, baseUrl || '/')
+  }
+  clean()
 }
 
-const msg = (src = '.', dist = 'dist', baseUrl = '/') => {
-  init(src,
-    filepath => filepath !== path.resolve('.', dist),
-    ({ isFile }) => generate(dist, isFile ? './' : baseUrl, clean))
-}
-
-exports.init = init
-exports.generate = generate
 exports.clean = clean
-exports.msg = msg
+exports.build = build
