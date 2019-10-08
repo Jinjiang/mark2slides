@@ -1,6 +1,6 @@
 {
   "name": "mark2slides",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A tool to generate slides from markdown file(s).",
   "main": "msg.js",
   "bin": {
