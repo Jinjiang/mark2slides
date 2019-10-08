@@ -149,14 +149,11 @@ const generate = async (dist, baseUrl) => {
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
   await generator.generate()
-  console.log(`\n[finished] all slides generated in ${config.output}\n`)
+  console.log(`\n[finished] all slides generated in ${dist}\n`)
 }
 
 const copy = (static, dist) => static.forEach(
-  file => {
-    console.log(file, dist, path.resolve(file), path.resolve(dist, file))
-    fs.copySync(path.resolve(file), path.resolve(dist, file))
-  })
+  file => fs.copySync(path.resolve(file), path.resolve(dist, file)))
 
 // ---- entry point ----
 
