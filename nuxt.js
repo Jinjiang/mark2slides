@@ -1,10 +1,13 @@
+const fs = require('fs')
+const path = require('path')
+
 exports.genPath = baseUrl => {
   const root = path.resolve(baseUrl, 'nuxt')
   const static = path.resolve(root, 'static')
   const pages = path.resolve(root, 'pages')
   const indexPage = path.resolve(pages, 'index.vue')
   const readmePage = path.resolve(pages, 'README.vue')
-  const buildDir = path.resolve(baseUrl, '.nuxt')
+  const buildDir = path.resolve('.', '.nuxt')
 
   return {
     root,
@@ -42,7 +45,7 @@ exports.genTemplatePath = baseUrl => {
   }
 }
 
-exports.genConfig = () => {
+exports.genConfig = () => ({
   mode: 'spa',
 
   dev: false,
@@ -76,4 +79,4 @@ exports.genConfig = () => {
   ** Customize the progress-bar color
   */
   loading: { color: '#fff' },
-}
+})

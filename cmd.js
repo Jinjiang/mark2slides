@@ -23,13 +23,13 @@ Commands:
   help
 
 Config File:
-  A JSON file which has two optional fields: "ignore" and "copy".
+  A JSON file which has two optional fields: "ignore" and "static".
   Both are an array of "minimatch" string, which would be used
   to match all first-level sub directories in the target directory.
   For example:
   {
     "ignore": ["dist"],
-    "copy": ["assets", "images"]
+    "static": ["assets", "images"]
   }
 
 `.trim())
@@ -62,18 +62,24 @@ switch (cmd) {
       help()
       return
     }
-    const input = argv.i || argv.input || '.'
-    const output = argv.o || argv.output || 'dist'
-    const baseUrl = argv.b || argv.base || '/'
+    const argInput = argv.i || argv.input
+    const argOutput = argv.o || argv.output
+    const argBaseUrl = argv.b || argv.base
     const rcUrl = argv.c || argv.rc || '.mdrc'
     let config = {}
     try {
-      config = JSON.parse(fs.readFileSync(rcUrl, { encoding: 'utf8' }))
+      if (fs.existsSync(rcUrl)) {
+        config = JSON.parse(fs.readFileSync(rcUrl, { encoding: 'utf8' }))
+      }
     } catch (error) {
       console.error(error)
     }
-    const { ignore, copy } = config
-    build(input, { output, baseUrl, ignore, copy })
+    const { ignore, static, output, input, base } = config
+    build(argInput || input || '.', {
+      output: argOutput || output || 'dist',
+      baseUrl: argBaseUrl || base || '/',
+      ignore, static
+    })
     return
   default:
     if (argv.h || argv.help) {

@@ -54,7 +54,7 @@ const checkInputType = src => {
   const target = fs.lstatSync(path.resolve(src))
   if (target.isFile()) {
     return 'file'
-  } else (target.isDirectory()) {
+  } else if (target.isDirectory()) {
     return 'directory'
   }
   return ''
@@ -69,10 +69,10 @@ const clean = () => {
 
 const prepareTemplate = () => {
   fs.ensureDirSync(nuxtPath.root)
-  templatePath.dirs
+  templatePath.directories
     .map(filepath => path.resolve(nuxtPath.root, filepath))
     .forEach(filepath => fs.ensureDirSync(filepath))
-  templateFiles
+  templatePath.files
     .forEach(filepath => 
       fs.copySync(
         path.join(templatePath.root, filepath),
@@ -85,13 +85,19 @@ const prepareFile = (src) => {
 }
 
 const prepareDirectory = (src, config) => {
-  const { dist, ignore, copy } = config
-  const filterList = [ /^\./, dist, ...ignore, ...copy]
+  const { dist, ignore, static } = config
+  const filterList = [dist, ...ignore, ...static]
 
   // generate pages
   const pageList = []
   const fullSrc = path.resolve(src)
   fs.readdirSync(fullSrc).forEach(file => {
+
+    // ignore hidden files/dirs
+    if (file.match(/^\./)) {
+      return
+    }
+
     // filter first
     if (filterList.some(rule => minimatch(file, rule))) {
       return
@@ -136,34 +142,41 @@ const generate = async (dist, baseUrl) => {
   config.srcDir = nuxtPath.root
   config.generate.dir = path.resolve(dist)
   config.build.extend = config => {
-    config.output.publicPath = `/${baseUrl}/_nuxt/`.replace(/\/\//g, '/')
+    config.output.publicPath = `/${baseUrl}/_nuxt/`.replace(/\/{2,}/g, '/')
   }
-  config.router.base = `/${baseUrl}/`.replace(/\/\//g, '/')
+  config.router.base = `/${baseUrl}/`.replace(/\/{2,}/g, '/')
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
   await generator.generate()
-  console.log(`\n[finished] all slides generated in ${output}\n`)
+  console.log(`\n[finished] all slides generated in ${config.output}\n`)
 }
+
+const copy = (static, dist) => static.forEach(
+  file => {
+    console.log(file, dist, path.resolve(file), path.resolve(dist, file))
+    fs.copySync(path.resolve(file), path.resolve(dist, file))
+  })
 
 // ---- entry point ----
 
-const build = async (src = '.', { output, baseUrl, ignore, copy }) => {
+const build = async (src = '.', { output, baseUrl, ignore, static }) => {
   const config = {
-    dist: dist || 'dist',
+    dist: output || 'dist',
     ignore: ignore || [],
-    copy: copy || []
+    static: static || []
   }
   clean()
   prepareTemplate()
   const inputType = checkInputType(src)
   if (inputType === 'file') {
     prepareFile(src)
-    await generate(dist, baseUrl || '/')
+    await generate(config.dist, baseUrl || '/')
   } else if (inputType === 'directory') {
     prepareDirectory(src, config)
-    await generate(dist, baseUrl || '/')
+    await generate(config.dist, baseUrl || '/')
   }
+  copy(config.static, config.dist)
   clean()
 }
 
