@@ -27,8 +27,10 @@ exports.genTemplatePath = baseUrl => {
   ]
   const files = [
     'components/slides.vue',
+    'components/theme.css',
     'components/joycon.js'
   ]
+  const themeFile = 'components/theme.css'
   const root = path.resolve(__dirname, 'template')
   const pagePath = path.resolve(root, 'pages', 'template.vue')
   const page = fs.readFileSync(pagePath, { encoding: 'utf8' })
@@ -39,6 +41,7 @@ exports.genTemplatePath = baseUrl => {
     root,
     directories,
     files,
+    themeFile,
     pagePath,
     page,
     pageGenerator

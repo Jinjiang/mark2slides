@@ -15,6 +15,7 @@ Options:
   -i, --input       input directory or markdown file, "." by default
   -o, --output      output directory, "dist" by default
   -b, --base        base path of the generated code, "/" by default
+  -t, --theme       path of a a CSS file applied to all slides
   -c, --config      config file, ".mdrc" by default
 
 Commands:
@@ -23,12 +24,20 @@ Commands:
   help
 
 Config File:
-  A JSON file which has two optional fields: "ignore" and "static".
-  Both are an array of "minimatch" string, which would be used
-  to match all first-level sub directories in the target directory.
+  A JSON file which supports all options except "--config".
+  And additionally it has two optional fields: "ignore" and "static".
+  Both of them are array of string, which would be used to match all
+  first-level sub directories in the target directory.
+  But please notice the priority of command arguments are higher than
+  this config file. That means you can use command arguments to
+  overwrite this config file after the file is written down.
   For example:
   {
-    "ignore": ["dist"],
+    "input": ".",
+    "output": "dist",
+    "base": "/",
+    "theme": "theme.css",
+    "ignore": ["dist", "theme.css"],
     "static": ["assets", "images"]
   }
 
@@ -65,6 +74,7 @@ switch (cmd) {
     const argInput = argv.i || argv.input
     const argOutput = argv.o || argv.output
     const argBaseUrl = argv.b || argv.base
+    const argTheme = argv.t || argv.theme
     const rcUrl = argv.c || argv.rc || '.mdrc'
     let config = {}
     try {
@@ -74,10 +84,11 @@ switch (cmd) {
     } catch (error) {
       console.error(error)
     }
-    const { ignore, static, output, input, base } = config
+    const { ignore, static, output, input, base, theme } = config
     build(argInput || input || '.', {
       output: argOutput || output || 'dist',
       baseUrl: argBaseUrl || base || '/',
+      theme: argTheme || theme || '',
       ignore, static
     })
     return

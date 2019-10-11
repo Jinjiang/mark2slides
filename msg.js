@@ -1,11 +1,4 @@
 /**
- * [todo]
- * - [ ] custom hammerjs
- * - [ ] custom highlight.js
- * - [ ] custom style
- */
-
-/**
  * 0. prepare nuxt project
  *   - `static/`
  *   - `pages/`
@@ -85,7 +78,7 @@ const prepareFile = (src) => {
 }
 
 const prepareDirectory = (src, config) => {
-  const { dist, ignore, static } = config
+  const { dist, theme, ignore, static } = config
   const filterList = [dist, ...ignore, ...static]
 
   // generate pages
@@ -135,6 +128,15 @@ const prepareDirectory = (src, config) => {
       transformIndex(pageList, nuxtPath.indexPage)
     }
   }
+
+  // copy theme css file if defined
+  if (theme) {
+    const fullThemePath = path.resolve(src, theme)
+    if (!fs.existsSync(fullThemePath)) {
+      fs.copySync(fullThemePath, templatePath.themeFile)
+      console.log('[generate theme]', theme, fullThemePath, templatePath.themeFile)
+    }
+  }
 }
 
 const generate = async (dist, baseUrl) => {
@@ -157,9 +159,10 @@ const copy = (static, dist) => static.forEach(
 
 // ---- entry point ----
 
-const build = async (src = '.', { output, baseUrl, ignore, static }) => {
+const build = async (src = '.', { output, baseUrl, theme, ignore, static }) => {
   const config = {
     dist: output || 'dist',
+    theme: theme || '',
     ignore: ignore || [],
     static: static || []
   }
