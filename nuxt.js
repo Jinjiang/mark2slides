@@ -7,6 +7,7 @@ exports.genPath = baseUrl => {
   const pages = path.resolve(root, 'pages')
   const indexPage = path.resolve(pages, 'index.vue')
   const readmePage = path.resolve(pages, 'README.vue')
+  const themeFile = path.resolve(root, 'components/theme.css')
   const buildDir = path.resolve('.', '.nuxt')
 
   return {
@@ -15,6 +16,7 @@ exports.genPath = baseUrl => {
     pages,
     indexPage,
     readmePage,
+    themeFile,
     buildDir
   }
 }
@@ -30,7 +32,6 @@ exports.genTemplatePath = baseUrl => {
     'components/theme.css',
     'components/joycon.js'
   ]
-  const themeFile = 'components/theme.css'
   const root = path.resolve(__dirname, 'template')
   const pagePath = path.resolve(root, 'pages', 'template.vue')
   const page = fs.readFileSync(pagePath, { encoding: 'utf8' })
@@ -41,7 +42,6 @@ exports.genTemplatePath = baseUrl => {
     root,
     directories,
     files,
-    themeFile,
     pagePath,
     page,
     pageGenerator

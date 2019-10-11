@@ -132,9 +132,8 @@ const prepareDirectory = (src, config) => {
   // copy theme css file if defined
   if (theme) {
     const fullThemePath = path.resolve(src, theme)
-    if (!fs.existsSync(fullThemePath)) {
-      fs.copySync(fullThemePath, templatePath.themeFile)
-      console.log('[generate theme]', theme, fullThemePath, templatePath.themeFile)
+    if (fs.existsSync(fullThemePath)) {
+      fs.copySync(fullThemePath, nuxtPath.themeFile)
     }
   }
 }
