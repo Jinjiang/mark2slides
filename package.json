@@ -4,7 +4,7 @@
   "description": "A tool to generate slides from markdown file(s).",
   "main": "msg.js",
   "bin": {
-    "m2s": "cmd.js"
+    "m2s": "main.js"
   },
   "homepage": "https://github.com/Jinjiang/mark2slides#readme",
   "repository": {
@@ -12,8 +12,8 @@
     "url": "git+https://github.com/Jinjiang/mark2slides.git"
   },
   "scripts": {
-    "build": "node ./cmd.js -i input -o dist",
-    "clean": "rm -Rf nuxt .nuxt dist"
+    "test:build": "node ./cmd.js -i input -o dist",
+    "test:clean": "rm -Rf nuxt .nuxt dist"
   },
   "keywords": [
     "markdown",
@@ -25,11 +25,13 @@
     "url": "https://github.com/Jinjiang/mark2slides/issues"
   },
   "dependencies": {
+    "execa": "^2.1.0",
     "fs-extra": "^7.0.1",
     "hammerjs": "^2.0.8",
     "highlight.js": "^9.15.10",
     "minimist": "^1.2.0",
     "nuxt": "^2.5.1",
+    "ora": "^4.0.2",
     "readdirp": "^2.2.1",
     "vue-mark-display": "^0.1.1"
   }

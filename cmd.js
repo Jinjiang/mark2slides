@@ -4,10 +4,11 @@ const fs = require('fs')
 const minimist = require('minimist')
 const { clean, build } = require('./msg')
 
-const argv = minimist(process.argv.slice(2))
+// because it would be a child process
+const argv = minimist(process.argv.slice(4))
 
 const help = () => console.log(`
-Hello, I'm a markdown-to-slides generator.
+[m2s]Hello, I'm a markdown-to-slides generator.
 
 Usage: m2s <command> [options]
 
@@ -43,12 +44,12 @@ Config File:
 
 `.trim())
 
-if (argv._.length > 1) {
+if (process.argv, argv._.length > 1) {
   if (argv.h || argv.help) {
     help()
     return
   }
-  console.error(`Sorry, you couldn't run more than one commands at the same time.`)
+  console.error(`[m2s]Sorry, you couldn't run more than one commands at the same time.`)
   return
 }
 
@@ -61,6 +62,7 @@ switch (cmd) {
       return
     }
     clean()
+    console.log('[m2s]Cleaned...')
     return
   case undefined:
   case 'help':
@@ -85,6 +87,7 @@ switch (cmd) {
       console.error(error)
     }
     const { ignore, static, output, input, base, theme } = config
+    console.log('[m2s][start]Building...')
     build(argInput || input || '.', {
       output: argOutput || output || 'dist',
       baseUrl: argBaseUrl || base || '/',
@@ -97,11 +100,12 @@ switch (cmd) {
       help()
       return
     }
-    if (fs.lstatSync(cmd).isFile()) {
+    if (fs.existsSync(cmd) && fs.lstatSync(cmd).isFile()) {
       const output = argv.o || argv.output || 'dist'
       const baseUrl = argv.b || argv.base || '/'
+      console.log('[m2s][start]Building...')
       build(cmd, { output, baseUrl })
       return
     }
-    console.error(`Sorry, command "${cmd}" not supported.`)
+    console.error(`[m2s]Sorry, command "${cmd}" not supported.`)
 }

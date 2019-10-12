@@ -150,7 +150,7 @@ const generate = async (dist, baseUrl) => {
   const builder = new Builder(nuxt)
   const generator = new Generator(nuxt, builder)
   await generator.generate()
-  console.log(`\n[finished] all slides generated in ${dist}\n`)
+  console.log(`[m2s][done] all slides generated in ${dist}`)
 }
 
 const copy = (static, dist) => static.forEach(
