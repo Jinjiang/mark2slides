@@ -28,7 +28,7 @@
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
     "hammerjs": "^2.0.8",
-    "highlight.js": "^9.15.10",
+    "highlight.js": "^10.1.2",
     "minimist": "^1.2.0",
     "nuxt": "^2.10.1",
     "ora": "^4.0.2",
