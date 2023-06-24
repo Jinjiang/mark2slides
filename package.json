@@ -30,7 +30,7 @@
     "hammerjs": "^2.0.8",
     "highlight.js": "^10.1.2",
     "minimist": "^1.2.0",
-    "nuxt": "^2.10.1",
+    "nuxt": "^3.4.3",
     "ora": "^4.0.2",
     "readdirp": "^3.1.3",
     "vue-mark-display": "^0.2.1"
