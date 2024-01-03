@@ -1,5 +1,7 @@
 # mark2slides
 
+> This repo is not under maintenance anymore. You can refer to a similar project called [Slidev](https://sli.dev/).
+
 A tool to generate slides from markdown file(s).
 
 Install: `yarn global add mark2slides` or `npm install mark2slides --global`
